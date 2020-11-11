@@ -14,9 +14,9 @@ func (t Token) String() string {
 		return t.Lit
 	}
 	if len(t.Lit) > 10 {
-		return fmt.Sprintf("%.10q...", t.Lit)
+		return fmt.Sprintf("%s %.10q...", t.Typ, t.Lit)
 	}
-	return fmt.Sprintf("%q", t.Lit)
+	return fmt.Sprintf("%s %q", t.Typ, t.Lit)
 }
 
 type TokenType int
@@ -52,6 +52,7 @@ const (
 	LET
 )
 
+// Useful to get the string representation of the type.
 var typemap = map[TokenType]string{
 	EOF:       "EOF",
 	ILLEGAL:   "ILLEGAL",
@@ -71,4 +72,16 @@ var typemap = map[TokenType]string{
 
 func (t TokenType) String() string {
 	return typemap[t]
+}
+
+var keywords = map[string]TokenType {
+	"fn": FUNCTION,
+	"let": LET,
+}
+
+func LookupIdent(ident string) TokenType {
+	if typ, ok := keywords[ident]; ok {
+		return typ
+	}
+	return IDENT
 }

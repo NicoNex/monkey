@@ -71,6 +71,10 @@ func (l *lexer) emit(t token.TokenType) {
 	l.start = l.pos
 }
 
+func (l *lexer) current() string {
+	return l.input[l.start:l.pos]
+}
+
 func (l *lexer) errorf(format string, args ...interface{}) {
 	l.tokens <- token.Token{
 		token.ILLEGAL,
@@ -109,7 +113,7 @@ func lexOperator(l *lexer) stateFn {
 func lexIdentifier(l *lexer) stateFn {
 	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 	if l.acceptRun(chars) {
-		l.emit(token.IDENT)
+		l.emit(token.LookupIdent(l.current()))
 	}
 	return lexExpression
 }
@@ -157,8 +161,8 @@ func lexExpression(l *lexer) stateFn {
 			l.backup()
 			return lexIdentifier
 		}
-		l.errorf("lexer: illegal token %q", r)
-		return nil
+		l.errorf("lexer: invalid token %q", r)
+		// return nil
 	}
 	return lexExpression
 }
