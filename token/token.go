@@ -19,6 +19,10 @@ func (t Token) String() string {
 	return fmt.Sprintf("%s %q", t.Typ, t.Lit)
 }
 
+func (t Token) Is(tt TokenType) bool {
+	return t.Typ == tt
+}
+
 type TokenType int
 
 const (

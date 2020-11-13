@@ -2,21 +2,16 @@ package main
 
 import (
 	"fmt"
-
-	"monkey/lexer"
+	"monkey/repl"
+	"os"
+	"os/user"
 )
 
 func main() {
-	input := `let five = 5;
-let ten = 10;
-
-let add = fn(x, y) {
-	x + y;
-};
-
-let result = add(five, ten);`
-
-	for t := range lexer.Lex(input) {
-		fmt.Println(t)
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
 	}
+	fmt.Printf("Hello %s! This is the Monkey programming language!\n", user.Username)
+	repl.Start(os.Stdin, os.Stdout)
 }
