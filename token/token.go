@@ -30,44 +30,72 @@ const (
 	INT   // Integer
 
 	// Operators.
-	ASSIGN // = statement
+	ASSIGN
 	PLUS
 	MINUS
-	DIVIDE
-	TIMES
+	SLASH
+	ASTERISK
 	POWER
+	EQ
+	NOT_EQ
+	BANG
+	LT
+	GT
 
 	// Delimiters.
 	COMMA
 	SEMICOLON
-
 	LPAREN
 	RPAREN
-
 	LBRACE
 	RBRACE
 
 	// Keywords.
 	FUNCTION
 	LET
+	IF
+	ELSE
+	RETURN
+	TRUE
+	FALSE
 )
 
 // Useful to get the string representation of the type.
 var typemap = map[TokenType]string{
-	EOF:       "EOF",
-	ILLEGAL:   "ILLEGAL",
-	IDENT:     "IDENT",
-	INT:       "INT",
-	ASSIGN:    "ASSIGN",
-	PLUS:      "PLUS",
-	COMMA:     "COMMA",
+	EOF: "EOF",
+	ILLEGAL: "ILLEGAL",
+
+	IDENT: "IDENT",
+	INT: "INT",
+
+	ASSIGN: "ASSIGN",
+	PLUS: "PLUS",
+	MINUS: "MINUS",
+	SLASH: "SLASH",
+	ASTERISK: "ASTERISK",
+	POWER: "POWER",
+	EQ: "EQ",
+	NOT_EQ: "NOT_EQ",
+	BANG: "BANG",
+	LT: "LT",
+	GT: "GT",
+
+	COMMA: "COMMA",
 	SEMICOLON: "SEMICOLON",
-	LPAREN:    "LPAREN",
-	RPAREN:    "RPAREN",
-	LBRACE:    "LBRACE",
-	RBRACE:    "RBRACE",
-	FUNCTION:  "FUNCTION",
-	LET:       "LET",
+
+	LPAREN: "LPAREN",
+	RPAREN: "RPAREN",
+
+	LBRACE: "LBRACE",
+	RBRACE: "RBRACE",
+
+	FUNCTION: "FUNCTION",
+	LET: "LET",
+	IF: "IF",
+	ELSE: "ELSE",
+	RETURN: "RETURN",
+	TRUE: "TRUE",
+	FALSE: "FALSE",
 }
 
 func (t TokenType) String() string {
@@ -77,6 +105,11 @@ func (t TokenType) String() string {
 var keywords = map[string]TokenType {
 	"fn": FUNCTION,
 	"let": LET,
+	"if": IF,
+	"else": ELSE,
+	"return": RETURN,
+	"true": TRUE,
+	"false": FALSE,
 }
 
 func LookupIdent(ident string) TokenType {

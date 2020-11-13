@@ -98,11 +98,32 @@ func lexOperator(l *lexer) stateFn {
 	case r == '-':
 		l.emit(token.MINUS)
 	case r == '*':
-		l.emit(token.TIMES)
+		if l.next() == '*' {
+			l.emit(token.POWER)
+		} else {
+			l.backup()
+			l.emit(token.ASTERISK)
+		}
 	case r == '/':
-		l.emit(token.DIVIDE)
-	case r == '^':
-		l.emit(token.POWER)
+		l.emit(token.SLASH)
+	case r == '=':
+		if l.next() == '=' {
+			l.emit(token.EQ)
+		} else {
+			l.backup()
+			l.emit(token.ASSIGN)
+		}
+	case r == '!':
+		if l.next() == '=' {
+			l.emit(token.NOT_EQ)
+		} else {
+			l.backup()
+			l.emit(token.BANG)
+		}
+	case r == '<':
+		l.emit(token.LT)
+	case r == '>':
+		l.emit(token.GT)
 	default:
 		l.errorf("illegal operator: %q", r)
 		return nil
@@ -118,6 +139,31 @@ func lexIdentifier(l *lexer) stateFn {
 	return lexExpression
 }
 
+func lexNumber(l *lexer) stateFn {
+	var digits = "0123456789"
+
+	// Optional leading sign
+	l.accept("+-")
+
+	// Is it hex?
+	if l.accept("0") && l.accept("xX") {
+		digits = "0123456789abcdefABCDEF"
+	}
+
+	l.acceptRun(digits)
+	if l.accept(".") {
+		l.acceptRun(digits)
+	}
+
+	if l.accept("eE") {
+		l.accept("+-")
+		l.accept("0123456789")
+	}
+
+	l.emit(token.INT)
+	return lexExpression
+}
+
 func lexExpression(l *lexer) stateFn {
 	switch r := l.next(); {
 
@@ -128,8 +174,9 @@ func lexExpression(l *lexer) stateFn {
 		l.backup()
 		return lexOperator
 
-	case r == '=':
-		l.emit(token.ASSIGN)
+	case isLetter(r):
+		l.backup()
+		return lexIdentifier
 
 	case r == ';':
 		l.emit(token.SEMICOLON)
@@ -143,9 +190,6 @@ func lexExpression(l *lexer) stateFn {
 	case r == ',':
 		l.emit(token.COMMA)
 
-	case r == '+':
-		l.emit(token.PLUS)
-
 	case r == '{':
 		l.emit(token.LBRACE)
 
@@ -157,12 +201,11 @@ func lexExpression(l *lexer) stateFn {
 		return nil
 
 	default:
-		if isLetter(r) {
+		if isNumber(r) {
 			l.backup()
-			return lexIdentifier
+			return lexNumber
 		}
 		l.errorf("lexer: invalid token %q", r)
-		// return nil
 	}
 	return lexExpression
 }
@@ -176,7 +219,8 @@ func isSpace(r rune) bool {
 }
 
 func isOperator(r rune) bool {
-	return r == '+' || r == '-' || r == '*' || r == '/' || r == '^'
+	return r == '+' || r == '-' || r == '*' || r == '/' || r == '^' ||
+		r == '=' || r == '!' || r == '<' || r == '>'
 }
 
 func isBracket(r rune) bool {
