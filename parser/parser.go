@@ -4,17 +4,21 @@ import (
 	"fmt"
 	"monkey/ast"
 	"monkey/token"
-	// "monkey/lexer"
 )
 
 type Parser struct {
 	cur    token.Token
 	peek   token.Token
 	tokens chan token.Token
+	errors []string
 }
 
 func New(tokens chan token.Token) *Parser {
-	return &Parser{<-tokens, <-tokens, tokens}
+	return &Parser{
+		cur: <-tokens,
+		peek: <-tokens,
+		tokens: tokens,
+	}
 }
 
 func (p *Parser) next() {
@@ -22,13 +26,15 @@ func (p *Parser) next() {
 	p.peek = <-p.tokens
 }
 
-func (p *Parser) Parse() *ast.Program {
-	var prog *ast.Program
+func (p *Parser) Errors() []string {
+	return p.errors
+}
 
-	for p.cur.Typ != token.EOF {
-		fmt.Println(p.cur)
+func (p *Parser) Parse() *ast.Program {
+	var prog = new(ast.Program)
+
+	for !p.cur.Is(token.EOF) {
 		if s := p.parseStatement(); s != nil {
-			fmt.Println(s)
 			prog.Statements = append(prog.Statements, s)
 		}
 		p.next()
@@ -82,5 +88,17 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.next()
 		return true
 	}
+	p.peekError(t)
 	return false
+}
+
+func (p *Parser) peekError(t token.TokenType) {
+	p.errors = append(
+		p.errors,
+		fmt.Sprintf(
+			"expected next token to be %s, got %s instead",
+			p.peek.Typ.String(),
+			t.String(),
+		),
+	)
 }
