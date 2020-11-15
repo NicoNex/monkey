@@ -15,8 +15,8 @@ type Parser struct {
 
 func New(tokens chan token.Token) *Parser {
 	return &Parser{
-		cur: <-tokens,
-		peek: <-tokens,
+		cur:    <-tokens,
+		peek:   <-tokens,
 		tokens: tokens,
 	}
 }

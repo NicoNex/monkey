@@ -2,28 +2,13 @@ package token
 
 import "fmt"
 
+type TokenType int
+
 type Token struct {
 	Typ TokenType
 	Lit string
 	Pos int
 }
-
-func (t Token) String() string {
-	switch t.Typ {
-	case ILLEGAL:
-		return t.Lit
-	}
-	if len(t.Lit) > 10 {
-		return fmt.Sprintf("%s %.10q...", t.Typ, t.Lit)
-	}
-	return fmt.Sprintf("%s %q", t.Typ, t.Lit)
-}
-
-func (t Token) Is(tt TokenType) bool {
-	return t.Typ == tt
-}
-
-type TokenType int
 
 const (
 	EOF TokenType = iota
@@ -102,11 +87,7 @@ var typemap = map[TokenType]string{
 	FALSE: "FALSE",
 }
 
-func (t TokenType) String() string {
-	return typemap[t]
-}
-
-var keywords = map[string]TokenType {
+var keywords = map[string]TokenType{
 	"fn": FUNCTION,
 	"let": LET,
 	"if": IF,
@@ -114,6 +95,25 @@ var keywords = map[string]TokenType {
 	"return": RETURN,
 	"true": TRUE,
 	"false": FALSE,
+}
+
+func (t Token) String() string {
+	switch t.Typ {
+	case ILLEGAL:
+		return t.Lit
+	}
+	if len(t.Lit) > 10 {
+		return fmt.Sprintf("%s %.10q...", t.Typ, t.Lit)
+	}
+	return fmt.Sprintf("%s %q", t.Typ, t.Lit)
+}
+
+func (t Token) Is(tt TokenType) bool {
+	return t.Typ == tt
+}
+
+func (t TokenType) String() string {
+	return typemap[t]
 }
 
 func LookupIdent(ident string) TokenType {
