@@ -4,7 +4,7 @@ import "monkey/token"
 
 type ExpressionStatement struct {
 	Token token.Token
-	Expr Expression
+	Expr  Expression
 }
 
 func (e *ExpressionStatement) SNode() {}

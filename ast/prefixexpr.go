@@ -6,9 +6,9 @@ import (
 )
 
 type PrefixExpression struct {
-	Token token.Token
+	Token    token.Token
 	Operator string
-	Right Expression
+	Right    Expression
 }
 
 func (p *PrefixExpression) ENode() {}
@@ -20,4 +20,3 @@ func (p *PrefixExpression) Literal() string {
 func (p *PrefixExpression) String() string {
 	return fmt.Sprintf("(%s%s)", p.Operator, p.Right.String())
 }
-

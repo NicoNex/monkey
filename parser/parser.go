@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
 	"monkey/ast"
 	"monkey/token"
+	"strconv"
 )
 
 type Parser struct {
@@ -34,24 +34,24 @@ const (
 
 // Links each operator to its precedence class.
 var precedences = map[token.TokenType]int{
-	token.EQ: EQUALS,
-	token.NOT_EQ: EQUALS,
-	token.LT: LESSGREATER,
-	token.GT: LESSGREATER,
-	token.PLUS: SUM,
-	token.MINUS: SUM,
-	token.SLASH: PRODUCT,
+	token.EQ:       EQUALS,
+	token.NOT_EQ:   EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
-	token.POWER: PRODUCT,
+	token.POWER:    PRODUCT,
 }
 
 func New(tokens chan token.Token) *Parser {
 	p := &Parser{
-		cur:    <-tokens,
-		peek:   <-tokens,
-		tokens: tokens,
+		cur:           <-tokens,
+		peek:          <-tokens,
+		tokens:        tokens,
 		prefixParsers: make(map[token.TokenType]parsePrefixFn),
-		infixParsers: make(map[token.TokenType]parseInfixFn),
+		infixParsers:  make(map[token.TokenType]parseInfixFn),
 	}
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
@@ -138,7 +138,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	var ret = &ast.ExpressionStatement{
 		Token: p.cur,
-		Expr: p.parseExpression(LOWEST),
+		Expr:  p.parseExpression(LOWEST),
 	}
 
 	if p.peek.Is(token.SEMICOLON) {
@@ -172,7 +172,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	expr := &ast.PrefixExpression{
-		Token: p.cur,
+		Token:    p.cur,
 		Operator: p.cur.Lit,
 	}
 	p.next()
@@ -182,9 +182,9 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expr := &ast.InfixExpression{
-		Token: p.cur,
+		Token:    p.cur,
 		Operator: p.cur.Lit,
-		Left: left,
+		Left:     left,
 	}
 	precedence := p.curPrecedence()
 	p.next()
