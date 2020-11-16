@@ -7,18 +7,40 @@ import (
 )
 
 type Parser struct {
-	cur    token.Token
-	peek   token.Token
-	tokens chan token.Token
-	errors []string
+	cur           token.Token
+	peek          token.Token
+	tokens        chan token.Token
+	errors        []string
+	prefixParsers map[token.TokenType]parsePrefixFn
+	infixParsers  map[token.TokenType]parseInfixFn
 }
 
+type (
+	parsePrefixFn func() ast.Expression
+	parseInfixFn  func(ast.Expression) ast.Expression
+)
+
+// Operators' precedences.
+const (
+	LOWEST int = iota
+	EQUALS
+	LESSGREATER
+	SUM
+	PRODUCT
+	PREFIX
+	CALL
+)
+
 func New(tokens chan token.Token) *Parser {
-	return &Parser{
+	p := &Parser{
 		cur:    <-tokens,
 		peek:   <-tokens,
 		tokens: tokens,
+		prefixParsers: make(map[token.TokenType]parsePrefixFn),
+		infixParsers: make(map[token.TokenType]parseInfixFn),
 	}
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	return p
 }
 
 func (p *Parser) next() {
@@ -50,7 +72,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -86,6 +108,30 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return r
 }
 
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	var ret = &ast.ExpressionStatement{
+		Token: p.cur,
+		Expr: p.parseExpression(LOWEST),
+	}
+
+	if p.peek.Is(token.SEMICOLON) {
+		p.next()
+	}
+	return ret
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	if fn, ok := p.prefixParsers[p.cur.Typ]; ok {
+		leftExp := fn()
+		return leftExp
+	}
+	return nil
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.cur, Value: p.cur.Lit}
+}
+
 // TODO: remove this if unused.
 func (p *Parser) currentIs(t token.TokenType) bool {
 	return p.cur.Typ == t
@@ -114,4 +160,12 @@ func (p *Parser) peekError(t token.TokenType) {
 			t.String(),
 		),
 	)
+}
+
+func (p *Parser) registerPrefix(typ token.TokenType, fn parsePrefixFn) {
+	p.prefixParsers[typ] = fn
+}
+
+func (p *Parser) registerInfix(typ token.TokenType, fn parseInfixFn) {
+	p.infixParsers[typ] = fn
 }
