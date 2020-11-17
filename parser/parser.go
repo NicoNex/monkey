@@ -43,6 +43,7 @@ var precedences = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.POWER:    PRODUCT,
+	token.LPAREN:   CALL,
 }
 
 func New(tokens chan token.Token) *Parser {
@@ -72,6 +73,7 @@ func New(tokens chan token.Token) *Parser {
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
 	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
 	p.registerInfix(token.POWER, p.parseInfixExpression)
+	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	return p
 }
 
@@ -121,20 +123,20 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	// skip everything until semicolon (just for the moment)
-	for !p.cur.Is(token.SEMICOLON) {
+	p.next()
+	s.Value = p.parseExpression(LOWEST)
+	if p.peek.Is(token.SEMICOLON) {
 		p.next()
 	}
-
 	return s
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	var r = &ast.ReturnStatement{Token: p.cur}
-	p.next()
 
-	// skip everything until semicolon (just for the moment)
-	if !p.cur.Is(token.SEMICOLON) {
+	p.next()
+	r.Value = p.parseExpression(LOWEST)
+	if p.peek.Is(token.SEMICOLON) {
 		p.next()
 	}
 	return r
@@ -280,6 +282,14 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	return expr
 }
 
+func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
+	return &ast.CallExpression{
+		Token: p.cur,
+		Func:  fn,
+		Args:  p.parseCallArguments(),
+	}
+}
+
 // Return a *ast.BlockStatement representing a block enclosed in braces.
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	var block = &ast.BlockStatement{Token: p.cur}
@@ -311,6 +321,29 @@ func (p *Parser) parseFunctionParams() []*ast.Identifier {
 		p.next()
 		p.next()
 		ret = append(ret, &ast.Identifier{Token: p.cur, Value: p.cur.Lit})
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return ret
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	var ret []ast.Expression
+
+	if p.peek.Is(token.RPAREN) {
+		p.next()
+		return ret
+	}
+
+	p.next()
+	ret = append(ret, p.parseExpression(LOWEST))
+
+	for p.peek.Is(token.COMMA) {
+		p.next()
+		p.next()
+		ret = append(ret, p.parseExpression(LOWEST))
 	}
 
 	if !p.expectPeek(token.RPAREN) {

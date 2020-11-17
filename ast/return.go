@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"bytes"
+	"fmt"
 	"monkey/token"
 )
 
@@ -17,12 +17,8 @@ func (r *ReturnStatement) Literal() string {
 func (r *ReturnStatement) SNode() {}
 
 func (r *ReturnStatement) String() string {
-	var out bytes.Buffer
-
-	out.WriteString(r.Literal() + " ")
 	if r.Value != nil {
-		out.WriteString(r.Value.String())
+		fmt.Sprintf("%s %s;", r.Literal(), r.Value)
 	}
-	out.WriteString(";")
-	return out.String()
+	return fmt.Sprintf("%s;", r.Literal())
 }

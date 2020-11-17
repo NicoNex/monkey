@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"io"
 	"monkey/lexer"
-	"monkey/token"
+	"monkey/parser"
 )
+
+func printParserErrors(errs []string, out io.Writer) {
+	for _, e := range errs {
+		fmt.Fprintln(out, e)
+	}
+}
 
 func Start(in io.Reader, out io.Writer) {
 	var scanner = bufio.NewScanner(in)
@@ -20,11 +26,13 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		tokens := lexer.Lex(line)
+		p := parser.New(tokens)
+		prog := p.Parse()
 
-		for t := range tokens {
-			if t.Typ != token.EOF {
-				fmt.Fprintln(out, t)
-			}
+		if errs := p.Errors(); len(errs) != 0 {
+			printParserErrors(errs, out)
+			continue
 		}
+		fmt.Fprintln(out, prog.String())
 	}
 }
