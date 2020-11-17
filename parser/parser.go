@@ -61,6 +61,7 @@ func New(tokens chan token.Token) *Parser {
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
@@ -261,6 +262,25 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expr
 }
 
+// Returns the expression representing the function.
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	var expr = &ast.FunctionLiteral{Token: p.cur}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	expr.Params = p.parseFunctionParams()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expr.Body = p.parseBlockStatement()
+	return expr
+}
+
+// Return a *ast.BlockStatement representing a block enclosed in braces.
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	var block = &ast.BlockStatement{Token: p.cur}
 
@@ -273,6 +293,30 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 		p.next()
 	}
 	return block
+}
+
+// Returns a list of *ast.Identifier consisting in the function parameters.
+func (p *Parser) parseFunctionParams() []*ast.Identifier {
+	var ret []*ast.Identifier
+
+	if p.peek.Is(token.RPAREN) {
+		p.next()
+		return ret
+	}
+
+	p.next()
+	ret = append(ret, &ast.Identifier{Token: p.cur, Value: p.cur.Lit})
+
+	for p.peek.Is(token.COMMA) {
+		p.next()
+		p.next()
+		ret = append(ret, &ast.Identifier{Token: p.cur, Value: p.cur.Lit})
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return ret
 }
 
 // TODO: remove this if unused.
