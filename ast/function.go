@@ -2,14 +2,14 @@ package ast
 
 import (
 	"fmt"
-	"strings"
 	"monkey/token"
+	"strings"
 )
 
 type FunctionLiteral struct {
-	Token token.Token
+	Token  token.Token
 	Params []*Identifier
-	Body *BlockStatement
+	Body   *BlockStatement
 }
 
 func (f *FunctionLiteral) ENode() {}
