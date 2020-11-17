@@ -378,8 +378,8 @@ func (p *Parser) peekError(t token.TokenType) {
 		p.errors,
 		fmt.Sprintf(
 			"expected next token to be %s, got %s instead",
-			p.peek.Typ.String(),
 			t.String(),
+			p.peek.Typ.String(),
 		),
 	)
 }
