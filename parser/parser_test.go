@@ -164,7 +164,7 @@ func TestLetStatements(t *testing.T) {
 		checkParserErrors(t, p)
 
 		if len(program.Statements) != 1 {
-			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
+			t.Fatalf("program.Statements does not contain 1 statements, got %d",
 				len(program.Statements))
 		}
 
@@ -197,14 +197,14 @@ func TestReturnStatements(t *testing.T) {
 		checkParserErrors(t, p)
 
 		if len(program.Statements) != 1 {
-			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
+			t.Fatalf("program.Statements does not contain 1 statements, got %d",
 				len(program.Statements))
 		}
 
 		stmt := program.Statements[0]
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
-			t.Fatalf("stmt not *ast.ReturnStatement. got=%T", stmt)
+			t.Fatalf("stmt not *ast.ReturnStatement, got %T", stmt)
 		}
 		if returnStmt.Literal() != "return" {
 			t.Fatalf("returnStmt.TokenLiteral not 'return', got %q",
