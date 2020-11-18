@@ -121,9 +121,19 @@ func lexOperator(l *lexer) stateFn {
 			l.emit(token.BANG)
 		}
 	case r == '<':
-		l.emit(token.LT)
+		if l.next() == '=' {
+			l.emit(token.LT_EQ)
+		} else {
+			l.backup()
+			l.emit(token.LT)
+		}
 	case r == '>':
-		l.emit(token.GT)
+		if l.next() == '=' {
+			l.emit(token.GT_EQ)
+		} else {
+			l.backup()
+			l.emit(token.GT)
+		}
 	default:
 		l.errorf("illegal operator: %q", r)
 		return nil

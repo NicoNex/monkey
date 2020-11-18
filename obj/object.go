@@ -15,7 +15,7 @@ const (
 
 var typrepr = map[Type]string{
 	NULL: "NULL",
-	INT: "INTEGER",
+	INT:  "INTEGER",
 	BOOL: "BOOLEAN",
 }
 

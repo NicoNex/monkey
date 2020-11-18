@@ -30,6 +30,8 @@ const (
 	BANG
 	LT
 	GT
+	LT_EQ
+	GT_EQ
 
 	// Delimiters.
 	COMMA
@@ -51,25 +53,27 @@ const (
 
 // Useful to get the string representation of the type.
 var typemap = map[TokenType]string{
-	EOF: "EOF",
+	EOF:     "EOF",
 	ILLEGAL: "ILLEGAL",
 
 	IDENT: "IDENT",
-	INT: "INT",
+	INT:   "INT",
 
-	ASSIGN: "=",
-	PLUS: "+",
-	MINUS: "-",
-	SLASH: "/",
+	ASSIGN:   "=",
+	PLUS:     "+",
+	MINUS:    "-",
+	SLASH:    "/",
 	ASTERISK: "*",
-	POWER: "**",
-	EQ: "==",
-	NOT_EQ: "!=",
-	BANG: "!",
-	LT: ">",
-	GT: "<",
+	POWER:    "**",
+	EQ:       "==",
+	NOT_EQ:   "!=",
+	BANG:     "!",
+	LT:       ">",
+	GT:       "<",
+	LT_EQ:    "<=",
+	GT_EQ:    ">=",
 
-	COMMA: ",",
+	COMMA:     ",",
 	SEMICOLON: ";",
 
 	LPAREN: "(",
@@ -79,22 +83,22 @@ var typemap = map[TokenType]string{
 	RBRACE: "}",
 
 	FUNCTION: "FUNCTION",
-	LET: "LET",
-	IF: "IF",
-	ELSE: "ELSE",
-	RETURN: "RETURN",
-	TRUE: "TRUE",
-	FALSE: "FALSE",
+	LET:      "LET",
+	IF:       "IF",
+	ELSE:     "ELSE",
+	RETURN:   "RETURN",
+	TRUE:     "TRUE",
+	FALSE:    "FALSE",
 }
 
 var keywords = map[string]TokenType{
-	"fn": FUNCTION,
-	"let": LET,
-	"if": IF,
-	"else": ELSE,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"if":     IF,
+	"else":   ELSE,
 	"return": RETURN,
-	"true": TRUE,
-	"false": FALSE,
+	"true":   TRUE,
+	"false":  FALSE,
 }
 
 func (t Token) String() string {

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/parser"
 )
@@ -33,6 +34,9 @@ func Start(in io.Reader, out io.Writer) {
 			printParserErrors(errs, out)
 			continue
 		}
-		fmt.Fprintln(out, prog.String())
+
+		if val := evaluator.Eval(prog); val != nil {
+			fmt.Fprintln(out, val.Inspect())
+		}
 	}
 }
