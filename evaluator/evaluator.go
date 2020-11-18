@@ -19,11 +19,15 @@ func btoo(b bool) *obj.Boolean {
 	return FALSE
 }
 
-func evalStatements(statements []ast.Statement) obj.Object {
+func evalProgram(statements []ast.Statement) obj.Object {
 	var ret obj.Object
 
 	for _, s := range statements {
 		ret = Eval(s)
+
+		if rv, ok := ret.(*obj.ReturnValue); ok {
+			return rv.Value
+		}
 	}
 	return ret
 }
@@ -117,12 +121,25 @@ func isTruthy(cond obj.Object) bool {
 	return cond != NULL && cond != FALSE
 }
 
+func evalBlockStatement(block *ast.BlockStatement) obj.Object {
+	var res obj.Object
+
+	for _, s := range block.Statements {
+		res = Eval(s)
+
+		if res != nil && res.Type() == obj.RETURN_VALUE {
+			return res
+		}
+	}
+	return res
+}
+
 func Eval(node ast.Node) obj.Object {
 	switch node := node.(type) {
 
 	// Statements
 	case *ast.Program:
-		return evalStatements(node.Statements)
+		return evalProgram(node.Statements)
 
 	case *ast.ExpressionStatement:
 		return Eval(node.Expr)
@@ -144,10 +161,14 @@ func Eval(node ast.Node) obj.Object {
 		return evalInfixExpr(node.Operator, left, right)
 
 	case *ast.BlockStatement:
-		return evalStatements(node.Statements)
+		return evalBlockStatement(node)
 
 	case *ast.IfExpression:
 		return evalIfExpr(node)
+
+	case *ast.ReturnStatement:
+		val := Eval(node.Value)
+		return &obj.ReturnValue{Value: val}
 	}
 
 	return nil
