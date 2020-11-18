@@ -329,8 +329,8 @@ func TestEvalBooleanExpression(t *testing.T) {
 // 	testIntegerObject(t, testEval(input), 70)
 // }
 
-func testBooleanObject(t *testing.T, o object.Object, expected bool) bool {
-	result, ok := o.(*object.Boolean)
+func testBooleanObject(t *testing.T, o obj.Object, expected bool) bool {
+	result, ok := o.(*obj.Boolean)
 	if !ok {
 		t.Errorf("object is not Boolean, got %T (%+v)", o, o)
 		return false
@@ -343,9 +343,9 @@ func testBooleanObject(t *testing.T, o object.Object, expected bool) bool {
 	return true
 }
 
-// func testNullObject(t *testing.T, obj object.Object) bool {
-// 	if obj != NULL {
-// 		t.Errorf("object is not NULL, got %T (%+v)", obj, obj)
+// func testNullObject(t *testing.T, o obj.Object) bool {
+// 	if o != NULL {
+// 		t.Errorf("object is not NULL, got %T (%+v)", o, o)
 // 		return false
 // 	}
 // 	return true
