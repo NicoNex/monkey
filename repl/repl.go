@@ -7,6 +7,7 @@ import (
 	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/parser"
+	"monkey/obj"
 )
 
 func printParserErrors(errs []string, out io.Writer) {
@@ -17,6 +18,7 @@ func printParserErrors(errs []string, out io.Writer) {
 
 func Start(in io.Reader, out io.Writer) {
 	var scanner = bufio.NewScanner(in)
+	var env = obj.NewEnv()
 
 	for {
 		fmt.Fprintf(out, ">>> ")
@@ -35,7 +37,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		if val := evaluator.Eval(prog); val != nil {
+		if val := evaluator.Eval(prog, env); val != nil {
 			fmt.Fprintln(out, val.Inspect())
 		}
 	}
