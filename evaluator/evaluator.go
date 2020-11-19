@@ -138,6 +138,10 @@ func evalIntInfixExpr(op string, left, right obj.Object) obj.Object {
 func evalIfExpr(ie *ast.IfExpression) obj.Object {
 	cond := Eval(ie.Condition)
 
+	if isError(cond) {
+		return cond
+	}
+
 	if isTruthy(cond) {
 		return Eval(ie.Consequence)
 	} else if ie.Alternative != nil {
@@ -170,6 +174,13 @@ func newError(format string, a ...interface{}) *obj.Error {
 	return &obj.Error{Msg: fmt.Sprintf(format, a...)}
 }
 
+func isError(o obj.Object) bool {
+	if o != nil {
+		return o.Type() == obj.ERROR
+	}
+	return false
+}
+
 func Eval(node ast.Node) obj.Object {
 	switch node := node.(type) {
 
@@ -189,11 +200,20 @@ func Eval(node ast.Node) obj.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalPrefixExpr(node.Operator, right)
 
 	case *ast.InfixExpression:
 		left := Eval(node.Left)
+		if isError(left) {
+			return left
+		}
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalInfixExpr(node.Operator, left, right)
 
 	case *ast.BlockStatement:
@@ -204,6 +224,9 @@ func Eval(node ast.Node) obj.Object {
 
 	case *ast.ReturnStatement:
 		val := Eval(node.Value)
+		if isError(val) {
+			return val
+		}
 		return &obj.ReturnValue{Value: val}
 	}
 
