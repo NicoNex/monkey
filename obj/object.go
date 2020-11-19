@@ -9,16 +9,18 @@ type Type int
 
 const (
 	NULL Type = iota
+	ERROR
 	INT
 	BOOL
-	RETURN_VALUE
+	RETURN
 )
 
 var typrepr = map[Type]string{
-	NULL:         "NULL",
-	INT:          "INTEGER",
-	BOOL:         "BOOLEAN",
-	RETURN_VALUE: "RETURN_VALUE",
+	NULL:   "NULL",
+	ERROR:  "ERROR",
+	INT:    "INTEGER",
+	BOOL:   "BOOLEAN",
+	RETURN: "RETURN",
 }
 
 func (t Type) String() string {

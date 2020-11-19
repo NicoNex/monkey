@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"monkey/ast"
 	"monkey/obj"
 )
@@ -25,8 +26,11 @@ func evalProgram(statements []ast.Statement) obj.Object {
 	for _, s := range statements {
 		ret = Eval(s)
 
-		if rv, ok := ret.(*obj.ReturnValue); ok {
-			return rv.Value
+		switch result := ret.(type) {
+		case *obj.ReturnValue:
+			return result.Value
+		case *obj.Error:
+			return result
 		}
 	}
 	return ret
@@ -43,7 +47,7 @@ func evalBangOpExpr(right obj.Object) obj.Object {
 
 func evalPrefixMinusOpExpr(right obj.Object) obj.Object {
 	if right.Type() != obj.INT {
-		return NULL
+		return newError("unknown operator: -%s", right.Type().String())
 	}
 
 	val := right.(*obj.Integer).Value
@@ -52,6 +56,7 @@ func evalPrefixMinusOpExpr(right obj.Object) obj.Object {
 
 func evalPrefixExpr(op string, right obj.Object) obj.Object {
 	switch op {
+
 	case "!":
 		return evalBangOpExpr(right)
 
@@ -59,20 +64,31 @@ func evalPrefixExpr(op string, right obj.Object) obj.Object {
 		return evalPrefixMinusOpExpr(right)
 
 	default:
-		return NULL
+		return newError("unknown operator %s%s", op, right.Type().String())
 	}
 }
 
 func evalInfixExpr(op string, left, right obj.Object) obj.Object {
 	switch {
+
 	case left.Type() == obj.INT && right.Type() == obj.INT:
 		return evalIntInfixExpr(op, left, right)
+
 	case op == "==":
 		return btoo(left == right)
+
 	case op == "!=":
 		return btoo(left != right)
+
+	case left.Type() != right.Type():
+		lt := left.Type().String()
+		rt := right.Type().String()
+		return newError("type mismatch: %s %s %s", lt, op, rt)
+
 	default:
-		return NULL
+		lt := left.Type().String()
+		rt := right.Type().String()
+		return newError("unknown operator: %s %s %s", lt, op, rt)
 	}
 }
 
@@ -81,28 +97,41 @@ func evalIntInfixExpr(op string, left, right obj.Object) obj.Object {
 	var r = right.(*obj.Integer).Value
 
 	switch op {
+
 	case "+":
 		return &obj.Integer{Value: l + r}
+
 	case "-":
 		return &obj.Integer{Value: l - r}
+
 	case "*":
 		return &obj.Integer{Value: l * r}
+
 	case "/":
 		return &obj.Integer{Value: l / r}
+
 	case "==":
 		return btoo(l == r)
+
 	case "!=":
 		return btoo(l != r)
+
 	case "<":
 		return btoo(l < r)
+
 	case ">":
 		return btoo(l > r)
+
 	case "<=":
 		return btoo(l <= r)
+
 	case ">=":
 		return btoo(l >= r)
+
 	default:
-		return NULL
+		lt := left.Type().String()
+		rt := right.Type().String()
+		return newError("unknown operator: %s %s %s", lt, op, rt)
 	}
 }
 
@@ -127,11 +156,18 @@ func evalBlockStatement(block *ast.BlockStatement) obj.Object {
 	for _, s := range block.Statements {
 		res = Eval(s)
 
-		if res != nil && res.Type() == obj.RETURN_VALUE {
-			return res
+		if res != nil {
+			rt := res.Type()
+			if rt == obj.RETURN || rt == obj.ERROR {
+				return res
+			}
 		}
 	}
 	return res
+}
+
+func newError(format string, a ...interface{}) *obj.Error {
+	return &obj.Error{Msg: fmt.Sprintf(format, a...)}
 }
 
 func Eval(node ast.Node) obj.Object {
