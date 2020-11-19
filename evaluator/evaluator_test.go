@@ -11,10 +11,9 @@ func testEval(input string) obj.Object {
 	toks := lexer.Lex(input)
 	p := parser.New(toks)
 	program := p.Parse()
-	// env := obj.NewEnvironment()
+	env := obj.NewEnv()
 
-	// return Eval(program, env)
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func testIntegerObject(t *testing.T, o obj.Object, expected int64) bool {
@@ -236,10 +235,10 @@ func TestErrorHandling(t *testing.T) {
 		// `,
 		// 			"unknown operator: BOOLEAN + BOOLEAN",
 		// 		},
-		// 		{
-		// 			"foobar",
-		// 			"identifier not found: foobar",
-		// 		},
+		{
+			"foobar",
+			"identifier not found: foobar",
+		},
 	}
 
 	for _, tt := range tests {
@@ -258,21 +257,21 @@ func TestErrorHandling(t *testing.T) {
 	}
 }
 
-// func TestLetStatements(t *testing.T) {
-// 	tests := []struct {
-// 		input    string
-// 		expected int64
-// 	}{
-// 		{"let a = 5; a;", 5},
-// 		{"let a = 5 * 5; a;", 25},
-// 		{"let a = 5; let b = a; b;", 5},
-// 		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
-// 	}
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let a = 5; a;", 5},
+		{"let a = 5 * 5; a;", 25},
+		{"let a = 5; let b = a; b;", 5},
+		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
+	}
 
-// 	for _, tt := range tests {
-// 		testIntegerObject(t, testEval(tt.input), tt.expected)
-// 	}
-// }
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
 
 // func TestFunctionObject(t *testing.T) {
 // 	input := "fn(x) { x + 2; };"

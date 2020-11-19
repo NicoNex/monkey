@@ -20,11 +20,11 @@ func btoo(b bool) *obj.Boolean {
 	return FALSE
 }
 
-func evalProgram(statements []ast.Statement) obj.Object {
+func evalProgram(statements []ast.Statement, env *obj.Env) obj.Object {
 	var ret obj.Object
 
 	for _, s := range statements {
-		ret = Eval(s)
+		ret = Eval(s, env)
 
 		switch result := ret.(type) {
 		case *obj.ReturnValue:
@@ -135,17 +135,17 @@ func evalIntInfixExpr(op string, left, right obj.Object) obj.Object {
 	}
 }
 
-func evalIfExpr(ie *ast.IfExpression) obj.Object {
-	cond := Eval(ie.Condition)
+func evalIfExpr(ie *ast.IfExpression, env *obj.Env) obj.Object {
+	var cond = Eval(ie.Condition, env)
 
 	if isError(cond) {
 		return cond
 	}
 
 	if isTruthy(cond) {
-		return Eval(ie.Consequence)
+		return Eval(ie.Consequence, env)
 	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative)
+		return Eval(ie.Alternative, env)
 	}
 	return NULL
 }
@@ -154,11 +154,11 @@ func isTruthy(cond obj.Object) bool {
 	return cond != NULL && cond != FALSE
 }
 
-func evalBlockStatement(block *ast.BlockStatement) obj.Object {
+func evalBlockStatement(block *ast.BlockStatement, env *obj.Env) obj.Object {
 	var res obj.Object
 
 	for _, s := range block.Statements {
-		res = Eval(s)
+		res = Eval(s, env)
 
 		if res != nil {
 			rt := res.Type()
@@ -168,6 +168,13 @@ func evalBlockStatement(block *ast.BlockStatement) obj.Object {
 		}
 	}
 	return res
+}
+
+func evalIdentifier(node *ast.Identifier, env *obj.Env) obj.Object {
+	if val, ok := env.Get(node.Value); ok {
+		return val
+	}
+	return newError("identifier not found: %s", node.Value)
 }
 
 func newError(format string, a ...interface{}) *obj.Error {
@@ -181,15 +188,15 @@ func isError(o obj.Object) bool {
 	return false
 }
 
-func Eval(node ast.Node) obj.Object {
+func Eval(node ast.Node, env *obj.Env) obj.Object {
 	switch node := node.(type) {
 
 	// Statements
 	case *ast.Program:
-		return evalProgram(node.Statements)
+		return evalProgram(node.Statements, env)
 
 	case *ast.ExpressionStatement:
-		return Eval(node.Expr)
+		return Eval(node.Expr, env)
 
 	// Expressions
 	case *ast.IntegerLiteral:
@@ -199,35 +206,45 @@ func Eval(node ast.Node) obj.Object {
 		return btoo(node.Value)
 
 	case *ast.PrefixExpression:
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
 		return evalPrefixExpr(node.Operator, right)
 
 	case *ast.InfixExpression:
-		left := Eval(node.Left)
+		left := Eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
 		return evalInfixExpr(node.Operator, left, right)
 
 	case *ast.BlockStatement:
-		return evalBlockStatement(node)
+		return evalBlockStatement(node, env)
 
 	case *ast.IfExpression:
-		return evalIfExpr(node)
+		return evalIfExpr(node, env)
 
 	case *ast.ReturnStatement:
-		val := Eval(node.Value)
+		val := Eval(node.Value, env)
 		if isError(val) {
 			return val
 		}
 		return &obj.ReturnValue{Value: val}
+
+	case *ast.LetStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+		env.Set(node.Name.Value, val)
+
+	case *ast.Identifier:
+		return evalIdentifier(node, env)
 	}
 
 	return nil

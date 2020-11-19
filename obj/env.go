@@ -5,7 +5,7 @@ type Env struct {
 }
 
 func NewEnv() *Env {
-	return &Env{store: make(map[string]Object)};
+	return &Env{store: make(map[string]Object)}
 }
 
 func (e *Env) Get(name string) (Object, bool) {
