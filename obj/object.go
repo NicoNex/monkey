@@ -13,14 +13,16 @@ const (
 	INT
 	BOOL
 	RETURN
+	FUNCTION
 )
 
 var typrepr = map[Type]string{
-	NULL:   "NULL",
-	ERROR:  "ERROR",
-	INT:    "INTEGER",
-	BOOL:   "BOOLEAN",
-	RETURN: "RETURN",
+	NULL:     "NULL",
+	ERROR:    "ERROR",
+	INT:      "INTEGER",
+	BOOL:     "BOOLEAN",
+	RETURN:   "RETURN",
+	FUNCTION: "FUNCTION",
 }
 
 func (t Type) String() string {

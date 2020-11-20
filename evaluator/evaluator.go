@@ -245,6 +245,11 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
+
+	case *ast.FunctionLiteral:
+		params := node.Params
+		body := node.Body
+		return &obj.Function{Params: params, Env: env, Body: body}
 	}
 
 	return nil
