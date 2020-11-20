@@ -163,25 +163,25 @@ if (10 > 1) {
 `,
 			10,
 		},
-		// 		{
-		// 			`
-		// let f = fn(x) {
-		//   return x;
-		//   x + 10;
-		// };
-		// f(10);`,
-		// 			10,
-		// 		},
-		// 		{
-		// 			`
-		// let f = fn(x) {
-		//    let result = x + 10;
-		//    return result;
-		//    return 10;
-		// };
-		// f(10);`,
-		// 			20,
-		// 		},
+		{
+			`
+let f = fn(x) {
+  return x;
+  x + 10;
+};
+f(10);`,
+			10,
+		},
+		{
+			`
+let f = fn(x) {
+   let result = x + 10;
+   return result;
+   return 10;
+};
+f(10);`,
+			20,
+		},
 	}
 
 	for _, tt := range tests {
@@ -223,18 +223,18 @@ func TestErrorHandling(t *testing.T) {
 			"if (10 > 1) { true + false; }",
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
-		// 		{
-		// 			`
-		// if (10 > 1) {
-		//   if (10 > 1) {
-		//     return true + false;
-		//   }
+		{
+			`
+		if (10 > 1) {
+		  if (10 > 1) {
+		    return true + false;
+		  }
 
-		//   return 1;
-		// }
-		// `,
-		// 			"unknown operator: BOOLEAN + BOOLEAN",
-		// 		},
+		  return 1;
+		}
+		`,
+			"unknown operator: BOOLEAN + BOOLEAN",
+		},
 		{
 			"foobar",
 			"identifier not found: foobar",
@@ -316,22 +316,22 @@ func TestFunctionApplication(t *testing.T) {
 	}
 }
 
-// func TestEnclosingEnvironments(t *testing.T) {
-// 	input := `
-// let first = 10;
-// let second = 10;
-// let third = 10;
+func TestEnclosingEnvironments(t *testing.T) {
+	input := `
+let first = 10;
+let second = 10;
+let third = 10;
 
-// let ourFunction = fn(first) {
-//   let second = 20;
+let ourFunction = fn(first) {
+  let second = 20;
 
-//   first + second + third;
-// };
+  first + second + third;
+};
 
-// ourFunction(20) + first + second;`
+ourFunction(20) + first + second;`
 
-// 	testIntegerObject(t, testEval(input), 70)
-// }
+	testIntegerObject(t, testEval(input), 70)
+}
 
 func testBooleanObject(t *testing.T, o obj.Object, expected bool) bool {
 	result, ok := o.(*obj.Boolean)

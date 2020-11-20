@@ -190,6 +190,31 @@ func evalExpressions(exps []ast.Expression, env *obj.Env) []obj.Object {
 	return ret
 }
 
+func applyFunction(fn obj.Object, args []obj.Object) obj.Object {
+	if f, ok := fn.(*obj.Function); ok {
+		extEnv := extendFuncEnv(f, args)
+		result := Eval(f.Body, extEnv)
+		return unwrapReturnValue(result)
+	}
+	return newError("not a function: %s", fn.Type().String())
+}
+
+func unwrapReturnValue(o obj.Object) obj.Object {
+	if rv, ok := o.(*obj.ReturnValue); ok {
+		return rv.Value
+	}
+	return o
+}
+
+func extendFuncEnv(fn *obj.Function, args []obj.Object) *obj.Env {
+	var env = obj.NewEnclosedEnv(fn.Env)
+
+	for i, p := range fn.Params {
+		env.Set(p.Value, args[i])
+	}
+	return env
+}
+
 func newError(format string, a ...interface{}) *obj.Error {
 	return &obj.Error{Msg: fmt.Sprintf(format, a...)}
 }
@@ -273,6 +298,7 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
+		return applyFunction(fn, args)
 	}
 
 	return nil
