@@ -2,14 +2,14 @@ package obj
 
 import (
 	"fmt"
-	"strings"
 	"monkey/ast"
+	"strings"
 )
 
 type Function struct {
 	Params []*ast.Identifier
-	Body *ast.BlockStatement
-	Env *Env
+	Body   *ast.BlockStatement
+	Env    *Env
 }
 
 func (f *Function) Type() Type {

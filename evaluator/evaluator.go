@@ -177,6 +177,19 @@ func evalIdentifier(node *ast.Identifier, env *obj.Env) obj.Object {
 	return newError("identifier not found: %s", node.Value)
 }
 
+func evalExpressions(exps []ast.Expression, env *obj.Env) []obj.Object {
+	var ret []obj.Object
+
+	for _, e := range exps {
+		val := Eval(e, env)
+		if isError(val) {
+			return []obj.Object{val}
+		}
+		ret = append(ret, val)
+	}
+	return ret
+}
+
 func newError(format string, a ...interface{}) *obj.Error {
 	return &obj.Error{Msg: fmt.Sprintf(format, a...)}
 }
@@ -250,6 +263,16 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 		params := node.Params
 		body := node.Body
 		return &obj.Function{Params: params, Env: env, Body: body}
+
+	case *ast.CallExpression:
+		fn := Eval(node.Func, env)
+		if isError(fn) {
+			return fn
+		}
+		args := evalExpressions(node.Args, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
 	}
 
 	return nil
