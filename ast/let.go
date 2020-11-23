@@ -3,7 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"monkey/token"
+	"github.com/NicoNex/monkey/token"
 )
 
 type LetStatement struct {

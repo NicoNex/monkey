@@ -2,7 +2,7 @@ package ast
 
 import (
 	"bytes"
-	"monkey/token"
+	"github.com/NicoNex/monkey/token"
 )
 
 type BlockStatement struct {

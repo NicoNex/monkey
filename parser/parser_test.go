@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"monkey/ast"
-	"monkey/lexer"
+	"github.com/NicoNex/monkey/ast"
+	"github.com/NicoNex/monkey/lexer"
 	"testing"
 )
 

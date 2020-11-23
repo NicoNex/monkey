@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"monkey/ast"
-	"monkey/token"
+	"github.com/NicoNex/monkey/ast"
+	"github.com/NicoNex/monkey/token"
 	"strconv"
 )
 

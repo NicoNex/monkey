@@ -2,7 +2,7 @@ package ast
 
 import (
 	"fmt"
-	"monkey/token"
+	"github.com/NicoNex/monkey/token"
 )
 
 type PrefixExpression struct {

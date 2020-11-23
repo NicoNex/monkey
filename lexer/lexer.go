@@ -6,7 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"monkey/token"
+	"github.com/NicoNex/monkey/token"
 )
 
 type lexer struct {

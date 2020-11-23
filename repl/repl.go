@@ -1,13 +1,15 @@
 package repl
 
 import (
-	"bufio"
+	"os"
 	"fmt"
 	"io"
-	"monkey/evaluator"
-	"monkey/lexer"
-	"monkey/parser"
-	"monkey/obj"
+	"github.com/NicoNex/monkey/evaluator"
+	"github.com/NicoNex/monkey/lexer"
+	"github.com/NicoNex/monkey/parser"
+	"github.com/NicoNex/monkey/obj"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func printParserErrors(errs []string, out io.Writer) {
@@ -16,29 +18,39 @@ func printParserErrors(errs []string, out io.Writer) {
 	}
 }
 
-func Start(in io.Reader, out io.Writer) {
-	var scanner = bufio.NewScanner(in)
+func Run() {
 	var env = obj.NewEnv()
+	var initState *terminal.State
 
+	initState, err := terminal.MakeRaw(0)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer terminal.Restore(0, initState)
+
+	term := terminal.NewTerminal(os.Stdin, ">>> ")
 	for {
-		fmt.Fprintf(out, ">>> ")
-		scanned := scanner.Scan()
-		if !scanned {
+		input, err := term.ReadLine()
+		if err != nil {
+			// Quit without error on Ctrl^D.
+			if err != io.EOF {
+				fmt.Println(err)
+			}
 			return
 		}
 
-		line := scanner.Text()
-		tokens := lexer.Lex(line)
+		tokens := lexer.Lex(input)
 		p := parser.New(tokens)
 		prog := p.Parse()
 
 		if errs := p.Errors(); len(errs) != 0 {
-			printParserErrors(errs, out)
+			printParserErrors(errs, term)
 			continue
 		}
 
 		if val := evaluator.Eval(prog, env); val != nil {
-			fmt.Fprintln(out, val.Inspect())
+			fmt.Fprintln(term, val.Inspect())
 		}
 	}
 }

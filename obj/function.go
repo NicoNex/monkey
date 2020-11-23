@@ -2,7 +2,7 @@ package obj
 
 import (
 	"fmt"
-	"monkey/ast"
+	"github.com/NicoNex/monkey/ast"
 	"strings"
 )
 

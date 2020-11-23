@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"monkey/lexer"
-	"monkey/obj"
-	"monkey/parser"
+	"github.com/NicoNex/monkey/lexer"
+	"github.com/NicoNex/monkey/obj"
+	"github.com/NicoNex/monkey/parser"
 	"testing"
 )
 

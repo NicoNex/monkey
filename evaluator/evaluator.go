@@ -2,8 +2,8 @@ package evaluator
 
 import (
 	"fmt"
-	"monkey/ast"
-	"monkey/obj"
+	"github.com/NicoNex/monkey/ast"
+	"github.com/NicoNex/monkey/obj"
 )
 
 var (
