@@ -27,8 +27,10 @@ func evalProgram(statements []ast.Statement, env *obj.Env) obj.Object {
 		ret = Eval(s, env)
 
 		switch result := ret.(type) {
+
 		case *obj.ReturnValue:
 			return result.Value
+
 		case *obj.Error:
 			return result
 		}
@@ -38,8 +40,10 @@ func evalProgram(statements []ast.Statement, env *obj.Env) obj.Object {
 
 func evalBangOpExpr(right obj.Object) obj.Object {
 	switch right {
+
 	case FALSE, NULL:
 		return TRUE
+
 	default:
 		return FALSE
 	}
@@ -100,12 +104,16 @@ func evalStrInfixExpr(op string, left, right obj.Object) obj.Object {
 	var r = right.(*obj.String).Value
 
 	switch op {
+
 	case "+":
 		return &obj.String{Value: l + r}
+
 	case "==":
 		return btoo(l == r)
+
 	case "!=":
 		return btoo(l != r)
+
 	default:
 		lt := left.Type().String()
 		rt := right.Type().String()
@@ -195,6 +203,10 @@ func evalIdentifier(node *ast.Identifier, env *obj.Env) obj.Object {
 	if val, ok := env.Get(node.Value); ok {
 		return val
 	}
+	if val, ok := builtins[node.Value]; ok {
+		return val
+	}
+
 	return newError("identifier not found: %s", node.Value)
 }
 
@@ -212,12 +224,19 @@ func evalExpressions(exps []ast.Expression, env *obj.Env) []obj.Object {
 }
 
 func applyFunction(fn obj.Object, args []obj.Object) obj.Object {
-	if f, ok := fn.(*obj.Function); ok {
-		extEnv := extendFuncEnv(f, args)
-		result := Eval(f.Body, extEnv)
+	switch fn := fn.(type) {
+
+	case *obj.Function:
+		extEnv := extendFuncEnv(fn, args)
+		result := Eval(fn.Body, extEnv)
 		return unwrapReturnValue(result)
+
+	case *obj.Builtin:
+		return fn.Fn(args...)
+
+	default:
+		return newError("not a function: %s", fn.Type().String())
 	}
-	return newError("not a function: %s", fn.Type().String())
 }
 
 func unwrapReturnValue(o obj.Object) obj.Object {

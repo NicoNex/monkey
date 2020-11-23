@@ -15,6 +15,7 @@ const (
 	STRING
 	RETURN
 	FUNCTION
+	BUILTIN
 )
 
 var typrepr = map[Type]string{
@@ -25,6 +26,7 @@ var typrepr = map[Type]string{
 	STRING:   "STRING",
 	RETURN:   "RETURN",
 	FUNCTION: "FUNCTION",
+	BUILTIN:  "BUILTIN",
 }
 
 func (t Type) String() string {
