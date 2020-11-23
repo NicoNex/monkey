@@ -74,6 +74,9 @@ func evalInfixExpr(op string, left, right obj.Object) obj.Object {
 	case left.Type() == obj.INT && right.Type() == obj.INT:
 		return evalIntInfixExpr(op, left, right)
 
+	case left.Type() == obj.STRING && right.Type() == obj.STRING:
+		return evalStrInfixExpr(op, left, right)
+
 	case op == "==":
 		return btoo(left == right)
 
@@ -89,6 +92,24 @@ func evalInfixExpr(op string, left, right obj.Object) obj.Object {
 		lt := left.Type().String()
 		rt := right.Type().String()
 		return newError("unknown operator: %s %s %s", lt, op, rt)
+	}
+}
+
+func evalStrInfixExpr(op string, left, right obj.Object) obj.Object {
+	var l = left.(*obj.String).Value
+	var r = right.(*obj.String).Value
+
+	switch op {
+	case "+":
+		return &obj.String{Value: l + r}
+	case "==":
+		return btoo(l == r)
+	case "!=":
+		return btoo(l != r)
+	default:
+		lt := left.Type().String()
+		rt := right.Type().String()
+		return newError("invalid operator: %s %s %s", lt, op, rt)
 	}
 }
 
@@ -299,6 +320,9 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 			return args[0]
 		}
 		return applyFunction(fn, args)
+
+	case *ast.StringLiteral:
+		return &obj.String{Value: node.Value}
 	}
 
 	return nil
