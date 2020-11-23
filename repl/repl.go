@@ -1,13 +1,13 @@
 package repl
 
 import (
-	"os"
 	"fmt"
-	"io"
 	"github.com/NicoNex/monkey/evaluator"
 	"github.com/NicoNex/monkey/lexer"
-	"github.com/NicoNex/monkey/parser"
 	"github.com/NicoNex/monkey/obj"
+	"github.com/NicoNex/monkey/parser"
+	"io"
+	"os"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
