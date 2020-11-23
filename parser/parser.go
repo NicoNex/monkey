@@ -58,6 +58,7 @@ func New(tokens chan token.Token) *Parser {
 	}
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
@@ -191,6 +192,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return expr
 }
 
+// Returns the expression obtained by parsin an infix expression.
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expr := &ast.InfixExpression{
 		Token:    p.cur,
@@ -222,6 +224,11 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	return r
 }
 
+// Returns a string expression
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: p.cur, Value: p.cur.Lit}
+}
+
 // Returns a boolean expression.
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.cur, Value: p.cur.Is(token.TRUE)}
@@ -236,6 +243,7 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
+// Returns the expression resulting from an if expression.
 func (p *Parser) parseIfExpression() ast.Expression {
 	var expr = &ast.IfExpression{Token: p.cur}
 

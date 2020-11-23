@@ -174,6 +174,17 @@ func lexNumber(l *lexer) stateFn {
 	return lexExpression
 }
 
+func lexString(l *lexer) stateFn {
+	if l.peek() == '"' {
+		l.emit(token.STRING)
+		l.next()
+		l.ignore()
+		return lexExpression
+	}
+	l.next()
+	return lexString
+}
+
 func lexExpression(l *lexer) stateFn {
 	switch r := l.next(); {
 
@@ -187,6 +198,10 @@ func lexExpression(l *lexer) stateFn {
 	case isLetter(r):
 		l.backup()
 		return lexIdentifier
+
+	case r == '"':
+		l.ignore()
+		return lexString
 
 	case r == ';':
 		l.emit(token.SEMICOLON)
@@ -231,14 +246,6 @@ func isSpace(r rune) bool {
 func isOperator(r rune) bool {
 	return r == '+' || r == '-' || r == '*' || r == '/' || r == '^' ||
 		r == '=' || r == '!' || r == '<' || r == '>'
-}
-
-func isBracket(r rune) bool {
-	return r == '(' || r == ')'
-}
-
-func isStatement(r rune) bool {
-	return r == '='
 }
 
 func isNumber(r rune) bool {

@@ -12,6 +12,7 @@ const (
 	ERROR
 	INT
 	BOOL
+	STRING
 	RETURN
 	FUNCTION
 )
@@ -21,6 +22,7 @@ var typrepr = map[Type]string{
 	ERROR:    "ERROR",
 	INT:      "INTEGER",
 	BOOL:     "BOOLEAN",
+	STRING:   "STRING",
 	RETURN:   "RETURN",
 	FUNCTION: "FUNCTION",
 }

@@ -17,6 +17,7 @@ const (
 	// Identifiers and literals.
 	IDENT // function names, variable names...
 	INT   // Integer
+	STRING
 
 	// Operators.
 	ASSIGN
@@ -58,6 +59,7 @@ var typemap = map[TokenType]string{
 
 	IDENT: "IDENT",
 	INT:   "INT",
+	STRING: "STRING",
 
 	ASSIGN:   "=",
 	PLUS:     "+",
