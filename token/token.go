@@ -2,16 +2,16 @@ package token
 
 import "fmt"
 
-type TokenType int
+type Type int
 
 type Token struct {
-	Typ TokenType
+	Typ Type
 	Lit string
 	Pos int
 }
 
 const (
-	EOF TokenType = iota
+	EOF Type = iota
 	ILLEGAL
 
 	// Identifiers and literals.
@@ -41,6 +41,8 @@ const (
 	RPAREN
 	LBRACE
 	RBRACE
+	LBRACKET
+	RBRACKET
 
 	// Keywords.
 	FUNCTION
@@ -53,12 +55,12 @@ const (
 )
 
 // Useful to get the string representation of the type.
-var typemap = map[TokenType]string{
+var typemap = map[Type]string{
 	EOF:     "EOF",
 	ILLEGAL: "ILLEGAL",
 
-	IDENT: "IDENT",
-	INT:   "INT",
+	IDENT:  "IDENT",
+	INT:    "INT",
 	STRING: "STRING",
 
 	ASSIGN:   "=",
@@ -78,11 +80,12 @@ var typemap = map[TokenType]string{
 	COMMA:     ",",
 	SEMICOLON: ";",
 
-	LPAREN: "(",
-	RPAREN: ")",
-
-	LBRACE: "{",
-	RBRACE: "}",
+	LPAREN:   "(",
+	RPAREN:   ")",
+	LBRACE:   "{",
+	RBRACE:   "}",
+	LBRACKET: "[",
+	RBRACKET: "]",
 
 	FUNCTION: "FUNCTION",
 	LET:      "LET",
@@ -93,7 +96,7 @@ var typemap = map[TokenType]string{
 	FALSE:    "FALSE",
 }
 
-var keywords = map[string]TokenType{
+var keywords = map[string]Type{
 	"fn":     FUNCTION,
 	"let":    LET,
 	"if":     IF,
@@ -114,15 +117,15 @@ func (t Token) String() string {
 	return fmt.Sprintf("%s %q", t.Typ, t.Lit)
 }
 
-func (t Token) Is(tt TokenType) bool {
+func (t Token) Is(tt Type) bool {
 	return t.Typ == tt
 }
 
-func (t TokenType) String() string {
+func (t Type) String() string {
 	return typemap[t]
 }
 
-func LookupIdent(ident string) TokenType {
+func LookupIdent(ident string) Type {
 	if typ, ok := keywords[ident]; ok {
 		return typ
 	}

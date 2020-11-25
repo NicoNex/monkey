@@ -62,7 +62,7 @@ func (l *lexer) acceptRun(valid string) bool {
 	return true
 }
 
-func (l *lexer) emit(t token.TokenType) {
+func (l *lexer) emit(t token.Type) {
 	l.tokens <- token.Token{
 		Typ: t,
 		Lit: l.input[l.start:l.pos],
@@ -211,6 +211,12 @@ func lexExpression(l *lexer) stateFn {
 
 	case r == ')':
 		l.emit(token.RPAREN)
+
+	case r == '[':
+		l.emit(token.LBRACKET)
+
+	case r == ']':
+		l.emit(token.RBRACKET)
 
 	case r == ',':
 		l.emit(token.COMMA)

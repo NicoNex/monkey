@@ -12,8 +12,8 @@ type Parser struct {
 	peek          token.Token
 	tokens        chan token.Token
 	errors        []string
-	prefixParsers map[token.TokenType]parsePrefixFn
-	infixParsers  map[token.TokenType]parseInfixFn
+	prefixParsers map[token.Type]parsePrefixFn
+	infixParsers  map[token.Type]parseInfixFn
 }
 
 type (
@@ -33,7 +33,7 @@ const (
 )
 
 // Links each operator to its precedence class.
-var precedences = map[token.TokenType]int{
+var precedences = map[token.Type]int{
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
 	token.LT:       LESSGREATER,
@@ -53,8 +53,8 @@ func New(tokens chan token.Token) *Parser {
 		cur:           <-tokens,
 		peek:          <-tokens,
 		tokens:        tokens,
-		prefixParsers: make(map[token.TokenType]parsePrefixFn),
-		infixParsers:  make(map[token.TokenType]parseInfixFn),
+		prefixParsers: make(map[token.Type]parsePrefixFn),
+		infixParsers:  make(map[token.Type]parseInfixFn),
 	}
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
@@ -66,6 +66,7 @@ func New(tokens chan token.Token) *Parser {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
@@ -159,7 +160,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return ret
 }
 
-func (p *Parser) noParsePrefixFnError(t token.TokenType) {
+func (p *Parser) noParsePrefixFnError(t token.Type) {
 	msg := fmt.Sprintf("no parse prefix function for '%s' found", t)
 	p.errors = append(p.errors, msg)
 }
@@ -294,11 +295,42 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	return expr
 }
 
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	return &ast.ArrayLiteral{
+		Token:    p.cur,
+		Elements: p.parseExpressionList(token.RBRACKET),
+	}
+}
+
+func (p *Parser) parseExpressionList(end token.Type) []ast.Expression {
+	var list []ast.Expression
+
+	if p.peek.Is(end) {
+		p.next()
+		return list
+	}
+
+	p.next()
+	list = append(list, p.parseExpression(LOWEST))
+
+	for p.peek.Is(token.COMMA) {
+		p.next()
+		p.next()
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+
+	return list
+}
+
 func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
 	return &ast.CallExpression{
 		Token: p.cur,
 		Func:  fn,
-		Args:  p.parseCallArguments(),
+		Args:  p.parseExpressionList(token.RPAREN),
 	}
 }
 
@@ -341,41 +373,18 @@ func (p *Parser) parseFunctionParams() []*ast.Identifier {
 	return ret
 }
 
-func (p *Parser) parseCallArguments() []ast.Expression {
-	var ret []ast.Expression
-
-	if p.peek.Is(token.RPAREN) {
-		p.next()
-		return ret
-	}
-
-	p.next()
-	ret = append(ret, p.parseExpression(LOWEST))
-
-	for p.peek.Is(token.COMMA) {
-		p.next()
-		p.next()
-		ret = append(ret, p.parseExpression(LOWEST))
-	}
-
-	if !p.expectPeek(token.RPAREN) {
-		return nil
-	}
-	return ret
-}
-
 // TODO: remove this if unused.
-func (p *Parser) currentIs(t token.TokenType) bool {
+func (p *Parser) currentIs(t token.Type) bool {
 	return p.cur.Typ == t
 }
 
 // TODO: remove this if unused.
-func (p *Parser) peekIs(t token.TokenType) bool {
+func (p *Parser) peekIs(t token.Type) bool {
 	return p.peek.Typ == t
 }
 
 // Returns true if the peek token is of type 't'.
-func (p *Parser) expectPeek(t token.TokenType) bool {
+func (p *Parser) expectPeek(t token.Type) bool {
 	if p.peek.Is(t) {
 		p.next()
 		return true
@@ -385,7 +394,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 }
 
 // Emits an error if the peek token is not of tipe t.
-func (p *Parser) peekError(t token.TokenType) {
+func (p *Parser) peekError(t token.Type) {
 	p.errors = append(
 		p.errors,
 		fmt.Sprintf(
@@ -413,11 +422,11 @@ func (p *Parser) curPrecedence() int {
 }
 
 // Adds fn to the prefix parsers table with key 'typ'.
-func (p *Parser) registerPrefix(typ token.TokenType, fn parsePrefixFn) {
+func (p *Parser) registerPrefix(typ token.Type, fn parsePrefixFn) {
 	p.prefixParsers[typ] = fn
 }
 
 // Adds fn to the infix parsers table with key 'typ'.
-func (p *Parser) registerInfix(typ token.TokenType, fn parseInfixFn) {
+func (p *Parser) registerInfix(typ token.Type, fn parseInfixFn) {
 	p.infixParsers[typ] = fn
 }
