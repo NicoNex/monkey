@@ -30,6 +30,7 @@ const (
 	PRODUCT
 	PREFIX
 	CALL
+	INDEX
 )
 
 // Links each operator to its precedence class.
@@ -46,6 +47,7 @@ var precedences = map[token.Type]int{
 	token.ASTERISK: PRODUCT,
 	token.POWER:    PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 func New(tokens chan token.Token) *Parser {
@@ -80,6 +82,7 @@ func New(tokens chan token.Token) *Parser {
 	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
 	p.registerInfix(token.POWER, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 	return p
 }
 
@@ -332,6 +335,19 @@ func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
 		Func:  fn,
 		Args:  p.parseExpressionList(token.RPAREN),
 	}
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	var exp = &ast.IndexExpression{Token: p.cur, Left: left}
+
+	p.next()
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
 
 // Return a *ast.BlockStatement representing a block enclosed in braces.
