@@ -15,7 +15,7 @@ var builtins = map[string]*obj.Builtin{
 				return &obj.Integer{Value: int64(len(arg.Value))}
 
 			default:
-				return newError("type not supported: got %s", arg.Type())
+				return newError("len: type not supported, got %s", arg.Type())
 			}
 		},
 	},

@@ -210,6 +210,26 @@ func evalIdentifier(node *ast.Identifier, env *obj.Env) obj.Object {
 	return newError("identifier not found: %s", node.Value)
 }
 
+func evalIndexExpression(left, index obj.Object) obj.Object {
+	switch {
+	case left.Type() == obj.ARRAY && index.Type() == obj.INT:
+		return evalArrayIndexExpression(left, index)
+	default:
+		return newError("index operator not supported %s", left.Type())
+	}
+}
+
+func evalArrayIndexExpression(array, index obj.Object) obj.Object {
+	var arr = array.(*obj.Array)
+	var idx = index.(*obj.Integer).Value
+	var max = int64(len(arr.Elements) - 1)
+
+	if idx < 0 || idx > max {
+		return NULL
+	}
+	return arr.Elements[idx]
+}
+
 func evalExpressions(exps []ast.Expression, env *obj.Env) []obj.Object {
 	var ret []obj.Object
 
@@ -342,6 +362,24 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 
 	case *ast.StringLiteral:
 		return &obj.String{Value: node.Value}
+
+	case *ast.ArrayLiteral:
+		elements := evalExpressions(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+		return &obj.Array{Elements: elements}
+
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpression(left, index)
 	}
 
 	return nil
