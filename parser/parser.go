@@ -389,16 +389,6 @@ func (p *Parser) parseFunctionParams() []*ast.Identifier {
 	return ret
 }
 
-// TODO: remove this if unused.
-func (p *Parser) currentIs(t token.Type) bool {
-	return p.cur.Typ == t
-}
-
-// TODO: remove this if unused.
-func (p *Parser) peekIs(t token.Type) bool {
-	return p.peek.Typ == t
-}
-
 // Returns true if the peek token is of type 't'.
 func (p *Parser) expectPeek(t token.Type) bool {
 	if p.peek.Is(t) {
