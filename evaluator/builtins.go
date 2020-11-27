@@ -34,9 +34,7 @@ var builtins = map[string]*obj.Builtin{
 			}
 
 			if len(args) > 1 {
-				for _, a := range args[1:] {
-					arr.Elements = append(arr.Elements, a)
-				}
+				arr.Elements = append(arr.Elements, args[1:]...)
 			}
 			return arr
 		},
